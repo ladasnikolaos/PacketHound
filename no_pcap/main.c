@@ -64,7 +64,7 @@ int main() {
             printf("Destination IP address = %s\n", inet_ntoa(outaddr));
 
             switch (ip_header->protocol) {
-                case PROTOCOL_TCP:{
+                case PROTOCOL_TCP: {
                     struct tcphdr* tcp_header =
                         (struct tcphdr*)((char*)ip_header + ip_header->ihl * 4);
 
@@ -72,7 +72,7 @@ int main() {
                     printf("TCP | Destination address = %u\n", ntohs(tcp_header->dest));
                     break;
                 }
-                case PROTOCOL_UDP:{
+                case PROTOCOL_UDP: {
                     struct udphdr* udp_header =
                         (struct udphdr*)((char*)ip_header + ip_header->ihl * 4);
                     printf("UDP | Source port = %u\n", ntohs(udp_header->source));
@@ -82,7 +82,7 @@ int main() {
             }
         } else if (ntohs(received->h_proto) == ETH_P_ARP) {
             /*    TODO: For the time exists only to compute the way to the payload,
-             *          might utilize the info here later. 
+             *          might utilize the info here later.
              */
             struct arphdr* arp_header = (struct arphdr*)(msg_buf + sizeof(struct ethhdr));
 
