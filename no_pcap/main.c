@@ -12,8 +12,6 @@
 
 #define MAX_SIZE 65534
 
-#define PROTOCOL_TCP 6
-#define PROTOCOL_UDP 17
 
 // liberally "burrowed" from /linux/if_arp.h and defined here for convenience.
 struct arppld {
@@ -81,7 +79,7 @@ int main() {
                 }
             }
         } else if (ntohs(received->h_proto) == ETH_P_ARP) {
-            /*    TODO: For the time exists only to compute the way to the payload,
+            /*    NOTE: For the time being, arp_header exists only to compute the way to the payload,
              *          might utilize the info here later.
              */
             struct arphdr* arp_header = (struct arphdr*)(msg_buf + sizeof(struct ethhdr));
