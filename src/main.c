@@ -68,16 +68,23 @@ int main(int argc, char** argv) {
                .mr_address = {0},  I forgot initializers like this auto set to zero */
     };
 
-    struct sockaddr_ll sockaddr_info = {
-        .sll_family = AF_PACKET,
-        .sll_protocol = ETH_P_ALL,
-        .sll_ifindex = if_index,
-    };
 
     if (setsockopt(sock_fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1) {
         perror("setsockopt failure");
         return -1;
     }
+
+    struct sockaddr_ll sockaddr_info = {
+        .sll_family = AF_PACKET,
+        .sll_protocol = htons(ETH_P_ALL),
+        .sll_ifindex = if_index,
+    };
+
+    if(bind(sock_fd, (struct sockaddr*) &sockaddr_info, sizeof(sockaddr_info)) < 0){
+        perror("Failed to bind");
+        return -1;
+    }
+
 
     while (true) {
         memset(msg_buf, 0, MAX_SIZE);  // mayb workaround this. Possibly overkill
