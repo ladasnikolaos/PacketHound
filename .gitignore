@@ -1,0 +1,4 @@
+.scratch.md
+target/
+build/
+compile_commands.json

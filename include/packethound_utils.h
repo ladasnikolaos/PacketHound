@@ -7,12 +7,12 @@
 
 #define MAX_SIZE 65534
 
-#include <linux/icmp.h>
-#include <linux/if_arp.h>
-#include <linux/if_ether.h>
-#include <linux/ip.h>
-#include <linux/tcp.h>
-#include <linux/udp.h>
+#include <netinet/ip_icmp.h>
+#include <net/if_arp.h>
+#include <netinet/if_ether.h>
+#include <netinet/ip.h>
+#include <netinet/tcp.h>
+#include <netinet/udp.h>
 
 typedef enum {
     ETH = 0,
@@ -35,7 +35,12 @@ extern const code_name_pair_t eth_translation_table[];
 const char* translate(Table_id table_id, int prot_num);
 const char* lookup(const code_name_pair_t* table, size_t len, int code);
 
-
+struct ethhdr* parse_ethernet(char* buf);
+struct tcphdr* parse_tcp(struct iphdr* ip_header);
+struct udphdr* parse_udp(struct iphdr* ip_header);
+struct arphdr* parse_arp(struct ethhdr* eth_header);
+struct iphdr* parse_ip(struct ethhdr* eth_header);
+struct icmphdr* parse_icmp(struct iphdr* ip_header);
 
 // liberally "burrowed" from /linux/if_arp.h and defined here for convenience.
 struct arppld {
