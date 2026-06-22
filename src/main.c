@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    char msg_buf[MAX_SIZE] = {0};
+    unsigned char msg_buf[MAX_SIZE] = {0};
 
     int sock_fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (sock_fd < 0) {
@@ -62,12 +62,7 @@ int main(int argc, char** argv) {
     struct packet_mreq mreq = {
         .mr_ifindex = if_index,
         .mr_type = PACKET_MR_PROMISC,
-        /* For PACKET_MR_PROMISC the man page specifies we dont really care about the other
-                fields
-                .mr_alen = 0,
-               .mr_address = {0},  I forgot initializers like this auto set to zero */
     };
-
 
     if (setsockopt(sock_fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1) {
         perror("setsockopt failure");
@@ -80,41 +75,42 @@ int main(int argc, char** argv) {
         .sll_ifindex = if_index,
     };
 
-    if(bind(sock_fd, (struct sockaddr*) &sockaddr_info, sizeof(sockaddr_info)) < 0){
+    if (bind(sock_fd, (struct sockaddr*)&sockaddr_info, sizeof(sockaddr_info)) < 0) {
         perror("Failed to bind");
         return -1;
     }
 
-
     while (true) {
+        ssize_t restof_bytes;
+
         memset(msg_buf, 0, MAX_SIZE);  // mayb workaround this. Possibly overkill
 
-        if (recv(sock_fd, msg_buf, MAX_SIZE, 0) == -1) {
+        if ((restof_bytes = recv(sock_fd, msg_buf, MAX_SIZE, 0)) == -1) {
             perror("recv failure");
             return -1;
         }
 
-        struct ethhdr* eth_header = parse_ethernet(msg_buf);
+        struct ethhdr* eth_header = parse_ethernet(msg_buf, &restof_bytes);
 
         if (ntohs(eth_header->h_proto) == ETH_P_IP) {
-            struct iphdr* ip_header = parse_ip(eth_header);
+            struct iphdr* ip_header = parse_ip(eth_header, &restof_bytes);
 
             switch (ip_header->protocol) {
                 case PROTOCOL_TCP: {
-                    struct tcphdr* tcp_header = parse_tcp(ip_header);
+                    struct tcphdr* tcp_header = parse_tcp(ip_header, &restof_bytes);
                     break;
                 }
                 case PROTOCOL_UDP: {
-                    struct udphdr* udp_header = parse_udp(ip_header);
+                    struct udphdr* udp_header = parse_udp(ip_header, &restof_bytes);
                     break;
                 }
                 case PROTOCOL_ICMP: {
-                    struct icmphdr* icmp_header = parse_icmp(ip_header);
+                    struct icmphdr* icmp_header = parse_icmp(ip_header, &restof_bytes);
                     break;
                 }
             }
         } else if (ntohs(eth_header->h_proto) == ETH_P_ARP) {
-            struct arphdr* arp_header = parse_arp(eth_header);
+            struct arphdr* arp_header = parse_arp(eth_header, &restof_bytes);
         }
     }
 }
