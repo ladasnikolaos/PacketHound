@@ -23,7 +23,7 @@
 
 int main(int argc, char** argv) {
     if (argc < 2) {
-        printf("less than 2 args");
+        printf("less than 2 args\n");
         return -1;
     }
     char* if_name = NULL;
@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
                 if_name = optarg;
                 break;
             case '?':
-                perror("unrecognized flag");
+                printf("unrecognized flag\n");
                 break;
         }
     }
@@ -49,13 +49,13 @@ int main(int argc, char** argv) {
 
     int sock_fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (sock_fd < 0) {
-        perror("socket failure");
+        fprintf(stderr, "socket failure\n");
         return -1;
     }
 
     unsigned int if_index = if_nametoindex(if_name);
     if (if_index == 0) {
-        perror("failed to index provided interface");
+        fprintf(stderr, "failed to index provided interface\n");
         return -1;
     }
 
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
     };
 
     if (setsockopt(sock_fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1) {
-        perror("setsockopt failure");
+        fprintf(stderr, "setsockopt failure\n");
         return -1;
     }
 
