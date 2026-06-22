@@ -18,6 +18,8 @@
 /*
  *
  *  TODO:  Maybe add a helper function which prints proper usage.
+ *  TODO:  Print statistics of protocol usage. 
+ *  TODO:  Possible architectural overhaul. TBD. 
  *
  */
 
