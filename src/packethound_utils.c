@@ -44,11 +44,11 @@ const char* lookup(const code_name_pair_t* table, size_t len, int code) {
     return "Translation not found";
 }
 
-struct ethhdr* parse_ethernet(unsigned char* buf, ssize_t* restof_bytes) {
+struct ethhdr* parse_ethernet(unsigned char* buf, ssize_t* bytes_remaining) {
 
-    //  NOTE:  I think im in the clear to cast restof_bytes to size_t here. 
+    //  NOTE:  I think im in the clear to cast bytes_remaining to size_t here. 
     //         The negative case is handled in main, might reconsider.
-    if((size_t)*restof_bytes < sizeof(struct ethhdr)){
+    if((size_t)*bytes_remaining < sizeof(struct ethhdr)){
         fprintf(stderr, "malformed eth header");
         return NULL;
     }
@@ -66,21 +66,21 @@ struct ethhdr* parse_ethernet(unsigned char* buf, ssize_t* restof_bytes) {
     printf("Eth type : %04x (%s)\n", ntohs(eth_header->h_proto),
            translate(ETH, ntohs(eth_header->h_proto)));
 
-    *restof_bytes -= sizeof(struct ethhdr);
+    *bytes_remaining -= sizeof(struct ethhdr);
 
     return eth_header;
 }
 
-struct tcphdr* parse_tcp(struct iphdr* ip_header, ssize_t* restof_bytes) {
+struct tcphdr* parse_tcp(struct iphdr* ip_header, ssize_t* bytes_remaining) {
 
-        if((size_t) *restof_bytes < sizeof(struct tcphdr)){
+        if((size_t) *bytes_remaining < sizeof(struct tcphdr)){
         fprintf(stderr, "malformed tcp header\n");
         return NULL;
     }
     struct tcphdr* tcp_header = (struct tcphdr*)((char*)ip_header + ip_header->ihl * 4);
     size_t tcp_doff_bytes = tcp_header->doff * 4;
 
-    if((size_t)*restof_bytes < tcp_doff_bytes ){
+    if((size_t)*bytes_remaining < tcp_doff_bytes ){
         fprintf(stderr,"malformed tcp header data\n");
         return NULL;
     }
@@ -88,14 +88,14 @@ struct tcphdr* parse_tcp(struct iphdr* ip_header, ssize_t* restof_bytes) {
     printf("TCP | Source address = %u\n", ntohs(tcp_header->source));
     printf("TCP | Destination address = %u\n", ntohs(tcp_header->dest));
 
-    *restof_bytes -= tcp_doff_bytes;
+    *bytes_remaining -= tcp_doff_bytes;
 
     return tcp_header;
 }
 
-struct iphdr* parse_ip(struct ethhdr* eth_header, ssize_t* restof_bytes) {
+struct iphdr* parse_ip(struct ethhdr* eth_header, ssize_t* bytes_remaining) {
 
-    if((size_t)*restof_bytes < sizeof(struct iphdr) ){
+    if((size_t)*bytes_remaining < sizeof(struct iphdr) ){
         fprintf(stderr, "malformed ip header\n");
         return NULL;
     }
@@ -103,7 +103,7 @@ struct iphdr* parse_ip(struct ethhdr* eth_header, ssize_t* restof_bytes) {
     struct iphdr* ip_header = (struct iphdr*)((char*)eth_header + sizeof(struct ethhdr));
     size_t iphl = ip_header->ihl * 4;
 
-    if((size_t)*restof_bytes < iphl){
+    if((size_t)*bytes_remaining < iphl){
         fprintf(stderr, "malformed ip header options\n");
         return NULL;
     }
@@ -117,14 +117,14 @@ struct iphdr* parse_ip(struct ethhdr* eth_header, ssize_t* restof_bytes) {
     printf("IP | Source IP address = %s\n", inet_ntoa(inaddr));
     printf("IP | Destination IP address = %s\n", inet_ntoa(outaddr));
 
-    *restof_bytes -= iphl;
+    *bytes_remaining -= iphl;
 
     return ip_header;
 }
 
-struct udphdr* parse_udp(struct iphdr* ip_header, ssize_t* restof_bytes) {
+struct udphdr* parse_udp(struct iphdr* ip_header, ssize_t* bytes_remaining) {
 
-    if((size_t)*restof_bytes < sizeof(struct udphdr)){
+    if((size_t)*bytes_remaining < sizeof(struct udphdr)){
 
         fprintf(stderr,"malformed udp header\n");
         return NULL;
@@ -135,14 +135,14 @@ struct udphdr* parse_udp(struct iphdr* ip_header, ssize_t* restof_bytes) {
     printf("UDP | Source port = %u\n", ntohs(udp_header->source));
     printf("UDP | Destination port = %u\n", ntohs(udp_header->dest));
 
-    *restof_bytes -= sizeof(struct udphdr);
+    *bytes_remaining -= sizeof(struct udphdr);
 
     return udp_header;
 }
 
-struct arphdr* parse_arp(struct ethhdr* eth_header, ssize_t* restof_bytes) {
+struct arphdr* parse_arp(struct ethhdr* eth_header, ssize_t* bytes_remaining) {
 
-    if((size_t)*restof_bytes < sizeof(struct arphdr) + sizeof(struct arppld)){
+    if((size_t)*bytes_remaining < sizeof(struct arphdr) + sizeof(struct arppld)){
         fprintf(stderr,"malformed arp header\n");
         return NULL;
     }
@@ -167,14 +167,14 @@ struct arphdr* parse_arp(struct ethhdr* eth_header, ssize_t* restof_bytes) {
     printf("ARP | Source IP : %s\n", inet_ntoa(sip_addr));
     printf("ARP | Target IP : %s\n", inet_ntoa(tip_addr));
 
-    *restof_bytes -= sizeof(struct arphdr) + sizeof(struct arppld);
+    *bytes_remaining -= sizeof(struct arphdr) + sizeof(struct arppld);
 
     return arp_header;
 }
 
-struct icmphdr* parse_icmp(struct iphdr* ip_header, ssize_t* restof_bytes) {
+struct icmphdr* parse_icmp(struct iphdr* ip_header, ssize_t* bytes_remaining) {
 
-    if((size_t)*restof_bytes < sizeof(struct icmphdr)){
+    if((size_t)*bytes_remaining < sizeof(struct icmphdr)){
 
         fprintf(stderr,"malformed icmp header\n");
         return NULL;
@@ -189,7 +189,7 @@ struct icmphdr* parse_icmp(struct iphdr* ip_header, ssize_t* restof_bytes) {
         printf("ICMP | icmp_echo_id = %u, icmp_echo_seq = %u\n", ntohs(icmp_header->un.echo.id),
                ntohs(icmp_header->un.echo.sequence));
 
-    *restof_bytes -= sizeof(struct icmphdr);
+    *bytes_remaining -= sizeof(struct icmphdr);
 
     return icmp_header;
 }

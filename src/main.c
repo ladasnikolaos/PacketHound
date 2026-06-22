@@ -1,3 +1,6 @@
+
+
+
 #include "packethound_utils.h"
 
 #include <arpa/inet.h>
@@ -17,10 +20,10 @@
 
 /*
  *
- *  TODO:  Maybe add a helper function which prints proper usage.
+ *  TODO:  Maybe add a helper function which prints proper usage. Quite shoddy for now
  *  TODO:  Print statistics of protocol usage. 
  *  TODO:  Possible architectural overhaul. TBD. 
- *
+ *  TODO:  Passing around pointers to structs like that feels a little clunky, maybe rethink? 
  */
 
 int main(int argc, char** argv) {
@@ -83,48 +86,48 @@ int main(int argc, char** argv) {
     }
 
     while (true) {
-        ssize_t restof_bytes;
+        ssize_t bytes_remaining;
 
-        memset(msg_buf, 0, MAX_SIZE);  // mayb workaround this. Possibly overkill
+        memset(msg_buf, 0, MAX_SIZE);  // TODO: possibly workaround this. Most likely its overkill
 
-        if ((restof_bytes = recv(sock_fd, msg_buf, MAX_SIZE, 0)) == -1) {
+        if ((bytes_remaining = recv(sock_fd, msg_buf, MAX_SIZE, 0)) == -1) {
             perror("recv failure");
             return -1;
         }
 
         struct ethhdr* eth_header;
-        if ((eth_header = parse_ethernet(msg_buf, &restof_bytes)) == NULL)
+        if ((eth_header = parse_ethernet(msg_buf, &bytes_remaining)) == NULL)
             continue;
 
         if (ntohs(eth_header->h_proto) == ETH_P_IP) {
 
             struct iphdr* ip_header;
-            if((ip_header = parse_ip(eth_header, &restof_bytes))==NULL)
+            if((ip_header = parse_ip(eth_header, &bytes_remaining))==NULL)
                 continue;
 
             switch (ip_header->protocol) {
                 case PROTOCOL_TCP: {
                     struct tcphdr* tcp_header;
-                    if ((tcp_header = parse_tcp(ip_header, &restof_bytes)) == NULL)
+                    if ((tcp_header = parse_tcp(ip_header, &bytes_remaining)) == NULL)
                         continue;
                     break;
                 }
                 case PROTOCOL_UDP: {
                     struct udphdr* udp_header;
-                    if ((udp_header = parse_udp(ip_header, &restof_bytes)) == NULL)
+                    if ((udp_header = parse_udp(ip_header, &bytes_remaining)) == NULL)
                         continue;
                     break;
                 }
                 case PROTOCOL_ICMP: {
                     struct icmphdr* icmp_header;
-                    if ((icmp_header = parse_icmp(ip_header, &restof_bytes)) == NULL)
+                    if ((icmp_header = parse_icmp(ip_header, &bytes_remaining)) == NULL)
                         continue;
                     break;
                 }
             }
         } else if (ntohs(eth_header->h_proto) == ETH_P_ARP) {
             struct arphdr* arp_header;
-            if ((arp_header = parse_arp(eth_header, &restof_bytes)) == NULL)
+            if ((arp_header = parse_arp(eth_header, &bytes_remaining)) == NULL)
                 continue;
         }
     }
