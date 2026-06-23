@@ -24,7 +24,19 @@
  *  TODO:  Print statistics of protocol usage. 
  *  TODO:  Possible architectural overhaul. TBD. 
  *  TODO:  Passing around pointers to structs like that feels a little clunky, maybe rethink? 
+ *  
  */
+
+
+struct stats_block {
+    unsigned int total_packet_count;
+    unsigned int tcp_over_ip_count;
+    unsigned int udp_over_ip_count;
+    unsigned int icmp_count; 
+    unsigned int arp_count;
+};
+
+
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -85,6 +97,8 @@ int main(int argc, char** argv) {
         return -1;
     }
 
+    struct stats_block stat_block = {0};
+
     while (true) {
         ssize_t bytes_remaining;
 
@@ -110,18 +124,25 @@ int main(int argc, char** argv) {
                     struct tcphdr* tcp_header;
                     if ((tcp_header = parse_tcp(ip_header, &bytes_remaining)) == NULL)
                         continue;
+                    stat_block.total_packet_count++;
+                    stat_block.tcp_over_ip_count++;
                     break;
                 }
                 case PROTOCOL_UDP: {
                     struct udphdr* udp_header;
                     if ((udp_header = parse_udp(ip_header, &bytes_remaining)) == NULL)
                         continue;
+
+                    stat_block.total_packet_count++;
+                    stat_block.udp_over_ip_count++;
                     break;
                 }
                 case PROTOCOL_ICMP: {
                     struct icmphdr* icmp_header;
                     if ((icmp_header = parse_icmp(ip_header, &bytes_remaining)) == NULL)
                         continue;
+                    stat_block.total_packet_count++;
+                    stat_block.icmp_count++;
                     break;
                 }
             }
@@ -129,6 +150,8 @@ int main(int argc, char** argv) {
             struct arphdr* arp_header;
             if ((arp_header = parse_arp(eth_header, &bytes_remaining)) == NULL)
                 continue;
+            stat_block.total_packet_count++;
+            stat_block.arp_count++;
         }
     }
 }
