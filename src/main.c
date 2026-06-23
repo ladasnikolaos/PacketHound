@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
                 if_name = optarg;
                 break;
             case '?':
-                printf("unrecognized flag\n");
+                fprintf(stderr, "unrecognized flag\n");
                 break;
         }
     }
