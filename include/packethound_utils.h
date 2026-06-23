@@ -5,8 +5,6 @@
 #define PROTOCOL_UDP 17
 #define PROTOCOL_ICMP 1
 
-#define MAX_SIZE 65534
-
 #include <net/if_arp.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
