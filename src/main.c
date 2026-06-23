@@ -66,13 +66,13 @@ int main(int argc, char** argv) {
 
     int sock_fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (sock_fd < 0) {
-        fprintf(stderr, "socket failure\n");
+        perror("socket failure");
         return -1;
     }
 
     unsigned int if_index = if_nametoindex(if_name);
     if (if_index == 0) {
-        fprintf(stderr, "failed to index provided interface\n");
+        perror("failed to index provided interface");
         return -1;
     }
 
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
     };
 
     if (setsockopt(sock_fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1) {
-        fprintf(stderr, "setsockopt failure\n");
+        perror("setsockopt failure");
         return -1;
     }
 
