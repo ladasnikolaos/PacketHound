@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    unsigned char msg_buf[MAX_SIZE] = {0};
+    unsigned char msg_buf[IP_MAXPACKET] = {0};
 
     int sock_fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (sock_fd < 0) {
