@@ -73,7 +73,7 @@ struct ethhdr* parse_ethernet(unsigned char* buf, ssize_t* bytes_remaining) {
 
 struct tcphdr* parse_tcp(struct iphdr* ip_header, ssize_t* bytes_remaining) {
 
-        if((size_t) *bytes_remaining < sizeof(struct tcphdr)){
+    if((size_t) *bytes_remaining < sizeof(struct tcphdr)){
         fprintf(stderr, "malformed tcp header\n");
         return NULL;
     }
