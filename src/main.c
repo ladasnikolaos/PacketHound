@@ -45,7 +45,7 @@ void sigint_handler(int signal){
 
 int main(int argc, char** argv) {
     if (argc < 2) {
-        printf("less than 2 args\n");
+        fprintf(stderr, "less than 2 args\n");
         return -1;
     }
     char* if_name = NULL;
@@ -58,12 +58,12 @@ int main(int argc, char** argv) {
                 break;
             case '?':
                 fprintf(stderr, "unrecognized flag\n");
-                break;
+                return -1;
         }
     }
 
     if (if_name == NULL) {
-        printf("Interface not provided.\neg. -i eth0\n");
+        fprintf(stderr,"Interface not provided.\neg. -i eth0\n");
         return -1;
     }
 
