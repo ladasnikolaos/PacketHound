@@ -49,7 +49,7 @@ void print_help(void) {
 
 int main(int argc, char** argv) {
     if (argc < 2) {
-        fprintf(stderr, "less than 2 args\n");
+        fprintf(stderr, "Usage: phound [OPTIONS]\nTry 'phound -h' for more information.\n");
         return -1;
     }
     char* if_name = NULL;
