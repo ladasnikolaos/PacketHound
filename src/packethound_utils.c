@@ -49,7 +49,7 @@ struct ethhdr* parse_ethernet(unsigned char* buf, ssize_t* bytes_remaining) {
     //  NOTE:  I think im in the clear to cast bytes_remaining to size_t here. 
     //         The negative case is handled in main, might reconsider.
     if((size_t)*bytes_remaining < sizeof(struct ethhdr)){
-        fprintf(stderr, "malformed eth header");
+        fprintf(stderr, "malformed eth header\n");
         return NULL;
     }
 
