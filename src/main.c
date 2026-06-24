@@ -1,6 +1,3 @@
-
-
-
 #include "packethound_utils.h"
 
 #include <arpa/inet.h>
@@ -35,6 +32,8 @@ struct stats_block {
     unsigned int icmp_count; 
     unsigned int arp_count;
 };
+
+
 
 
 
@@ -154,4 +153,18 @@ int main(int argc, char** argv) {
             stat_block.arp_count++;
         }
     }
+
+    printf("Session stats :\n"
+           "\tTotal Amount of Packets processed : %ud\n"
+           "\tTCP/IP packets : %ud\n"
+           "\tUDP/IP packets : %ud\n"
+           "\tICMP packets : %ud\n"
+           "\tARP packets : %ud\n",
+           stat_block.total_packet_count,
+           stat_block.tcp_over_ip_count,
+           stat_block.udp_over_ip_count,
+           stat_block.icmp_count,
+           stat_block.arp_count
+           );
+
 }
