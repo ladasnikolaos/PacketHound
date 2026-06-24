@@ -32,12 +32,12 @@ extern const code_name_pair_t eth_translation_table[];
 const char* translate(Table_id table_id, int prot_num);
 const char* lookup(const code_name_pair_t* table, size_t len, int code);
 
-struct ethhdr* parse_ethernet(unsigned char* buf, ssize_t* restof_bytes);
-struct tcphdr* parse_tcp(struct iphdr* ip_header, ssize_t* restof_bytes);
-struct udphdr* parse_udp(struct iphdr* ip_header, ssize_t* restof_bytes);
-struct arphdr* parse_arp(struct ethhdr* eth_header, ssize_t* restof_bytes);
-struct iphdr* parse_ip(struct ethhdr* eth_header, ssize_t* restof_bytes);
-struct icmphdr* parse_icmp(struct iphdr* ip_header, ssize_t* restof_bytes);
+struct ethhdr* parse_ethernet(unsigned char* buf, ssize_t* bytes_remaining);
+struct tcphdr* parse_tcp(struct iphdr* ip_header, ssize_t* bytes_remaining);
+struct udphdr* parse_udp(struct iphdr* ip_header, ssize_t* bytes_remaining);
+struct arphdr* parse_arp(struct ethhdr* eth_header, ssize_t* bytes_remaining);
+struct iphdr* parse_ip(struct ethhdr* eth_header, ssize_t* bytes_remaining);
+struct icmphdr* parse_icmp(struct iphdr* ip_header, ssize_t* bytes_remaining);
 
 // liberally "burrowed" from /linux/if_arp.h and defined here for convenience.
 struct arppld {
