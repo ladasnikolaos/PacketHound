@@ -171,12 +171,13 @@ int main(int argc, char** argv) {
         }
     }
 
+    printf("\n================================================\n");
     printf("Session stats :\n"
-           "\tTotal Amount of Packets processed : %ud\n"
-           "\tTCP/IP packets : %ud\n"
-           "\tUDP/IP packets : %ud\n"
-           "\tICMP packets : %ud\n"
-           "\tARP packets : %ud\n",
+           "\tTotal Amount of Packets processed : %u\n"
+           "\tTCP/IP packets : %u\n"
+           "\tUDP/IP packets : %u\n"
+           "\tICMP packets : %u\n"
+           "\tARP packets : %u\n",
            stat_block.total_packet_count,
            stat_block.tcp_over_ip_count,
            stat_block.udp_over_ip_count,
