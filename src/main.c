@@ -1,5 +1,7 @@
 #include "packethound_utils.h"
 
+#include <errno.h>
+#include <signal.h>
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <net/if_arp.h>
@@ -34,7 +36,11 @@ struct stats_block {
 };
 
 
+volatile sig_atomic_t sigint_not_received = 1;
 
+void sigint_handler(int signal){
+    sigint_not_received = 0;
+}
 
 
 int main(int argc, char** argv) {
@@ -98,12 +104,23 @@ int main(int argc, char** argv) {
 
     struct stats_block stat_block = {0};
 
-    while (true) {
+    struct sigaction sig_action = { .sa_handler = sigint_handler} ;
+
+    if(sigaction(SIGINT, &sig_action, NULL) == -1){
+        perror("sigaction failure");
+        return -1;
+    }
+
+    while (sigint_not_received) {
         ssize_t bytes_remaining;
 
         memset(msg_buf, 0, IP_MAXPACKET);  // TODO: possibly workaround this. Most likely its overkill
 
         if ((bytes_remaining = recv(sock_fd, msg_buf, IP_MAXPACKET, 0)) == -1) {
+
+            if(errno == EINTR)
+                continue;
+
             perror("recv failure");
             return -1;
         }
