@@ -1,10 +1,11 @@
 CC := gcc
 CSTD := gnu99
-CFLAGS := -std=$(CSTD) -Wall -Wextra -g -Iinclude
+CFLAGS := -std=$(CSTD) -Wall -Wextra -g -Iinclude -MMD -MP
 
 SRC := $(wildcard src/*.c)
 OBJ := $(patsubst src/%.c,build/%.o,$(SRC))
-TARGET := target/main
+-include $(OBJ:.o=.d)
+TARGET := target/phound
 
 .PHONY: all clean run
 
