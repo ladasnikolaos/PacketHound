@@ -20,7 +20,6 @@
 /*
  *
  *  TODO:  Maybe add a helper function which prints proper usage. Quite shoddy for now
- *  TODO:  Print statistics of protocol usage. 
  *  TODO:  Possible architectural overhaul. TBD. 
  *  TODO:  Passing around pointers to structs like that feels a little clunky, maybe rethink? 
  *  
