@@ -11,9 +11,7 @@
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
 #include <netpacket/packet.h>
-#include <stdbool.h>
 #include <stdio.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
