@@ -39,6 +39,14 @@ void sigint_handler(int signal){
 }
 
 
+void print_help(void) {
+    printf("Usage: phound [OPTIONS]\n" 
+           "OPTIONS:\n"
+           "-i <interface> | Interface to use | eg. -i eth0\n"
+           "-h             | Displays this help message\n"
+           );
+}
+
 int main(int argc, char** argv) {
     if (argc < 2) {
         fprintf(stderr, "less than 2 args\n");
@@ -47,11 +55,14 @@ int main(int argc, char** argv) {
     char* if_name = NULL;
     int opt;
 
-    while ((opt = getopt(argc, argv, "i:")) != -1) {
+    while ((opt = getopt(argc, argv, "i:h")) != -1) {
         switch (opt) {
             case 'i':
                 if_name = optarg;
                 break;
+            case 'h':
+                print_help();
+                return 0;
             case '?':
                 fprintf(stderr, "unrecognized flag\n");
                 return -1;
