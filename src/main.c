@@ -113,8 +113,6 @@ int main(int argc, char** argv) {
     while (sigint_not_received) {
         ssize_t bytes_remaining;
 
-        memset(msg_buf, 0, IP_MAXPACKET);  // TODO: possibly workaround this. Most likely its overkill
-
         if ((bytes_remaining = recv(sock_fd, msg_buf, IP_MAXPACKET, 0)) == -1) {
 
             if(errno == EINTR)
