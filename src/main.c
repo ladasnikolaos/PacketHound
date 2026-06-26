@@ -22,6 +22,11 @@
  *  
  */
 
+enum parse_result {
+    BIND_INTERFACE_PROCEED=0,
+    ERROR = 1,
+    HELP = 2
+};
 
 struct stats_block {
     unsigned int total_packet_count;
