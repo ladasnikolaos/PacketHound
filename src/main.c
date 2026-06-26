@@ -91,15 +91,17 @@ enum parse_result parse_args(int argc, char** argv, char** if_name){
         return BIND_INTERFACE_PROCEED;
 }
 
-    unsigned char msg_buf[IP_MAXPACKET] = {0};
 
-    int sock_fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-    if (sock_fd < 0) {
+int init_socket(int* socket_fd, char* if_name){
+
+    *socket_fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+    if (*socket_fd < 0) {
         perror("socket failure");
         return -1;
     }
 
     unsigned int if_index = if_nametoindex(if_name);
+
     if (if_index == 0) {
         perror("failed to index provided interface");
         return -1;
@@ -110,7 +112,7 @@ enum parse_result parse_args(int argc, char** argv, char** if_name){
         .mr_type = PACKET_MR_PROMISC,
     };
 
-    if (setsockopt(sock_fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1) {
+    if (setsockopt(*socket_fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1) {
         perror("setsockopt failure");
         return -1;
     }
@@ -121,12 +123,14 @@ enum parse_result parse_args(int argc, char** argv, char** if_name){
         .sll_ifindex = if_index,
     };
 
-    if (bind(sock_fd, (struct sockaddr*)&sockaddr_info, sizeof(sockaddr_info)) < 0) {
+    if (bind(*socket_fd, (struct sockaddr*)&sockaddr_info, sizeof(sockaddr_info)) < 0) {
         perror("Failed to bind");
         return -1;
     }
 
-    struct stats_block stat_block = {0};
+    return 0;
+}
+
 
     struct sigaction sig_action = { .sa_handler = sigint_handler} ;
 
