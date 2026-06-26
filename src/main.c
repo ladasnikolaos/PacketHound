@@ -1,5 +1,6 @@
 #include "packethound_utils.h"
 
+#include <stdbool.h>
 #include <errno.h>
 #include <signal.h>
 #include <arpa/inet.h>
@@ -52,32 +53,43 @@ void print_help(void) {
            );
 }
 
-int main(int argc, char** argv) {
-    if (argc < 2) {
-        fprintf(stderr, "Usage: phound [OPTIONS]\nTry 'phound -h' for more information.\n");
-        return -1;
-    }
-    char* if_name = NULL;
+enum parse_result parse_args(int argc, char** argv, char** if_name){
+    bool h_seen = false, i_seen = false; 
     int opt;
 
-    while ((opt = getopt(argc, argv, "i:h")) != -1) {
+    if (argc < 2) {
+        return ERROR;
+    }
+
+    while ((opt = getopt(argc, argv, ":i:h")) != -1) {
         switch (opt) {
             case 'i':
-                if_name = optarg;
+                *if_name = optarg;
+                i_seen = true;
                 break;
             case 'h':
-                print_help();
-                return 0;
+                h_seen = true;
+                break;
             case '?':
-                fprintf(stderr, "unrecognized flag\n");
-                return -1;
+                fprintf(stderr, "Unrecognized flag '-%c'\n", optopt);
+                return ERROR;
+            case ':':
+                fprintf(stderr, "Flag '-%c' required an argument.\n", optopt);
+                return ERROR;
         }
     }
 
-    if (if_name == NULL) {
-        fprintf(stderr,"Interface not provided.\neg. -i eth0\n");
-        return -1;
-    }
+    if(i_seen && h_seen){
+        fprintf(stderr, "'-i' and '-h' cant be used together.\n");
+        return ERROR;
+    } else if (h_seen){
+        return HELP;
+    } else if (!i_seen) {
+        fprintf(stderr, "Interface not provided.\n");
+        return ERROR;
+    } else
+        return BIND_INTERFACE_PROCEED;
+}
 
     unsigned char msg_buf[IP_MAXPACKET] = {0};
 
