@@ -131,13 +131,17 @@ int init_socket(int* socket_fd, char* if_name){
     return 0;
 }
 
+int init_sigaction(){
 
-    struct sigaction sig_action = { .sa_handler = sigint_handler} ;
+    struct sigaction sig_action = {.sa_handler = sigint_handler} ;
 
     if(sigaction(SIGINT, &sig_action, NULL) == -1){
         perror("sigaction failure");
         return -1;
     }
+    return 0;
+}
+
 
     while (sigint_not_received) {
         ssize_t bytes_remaining;
