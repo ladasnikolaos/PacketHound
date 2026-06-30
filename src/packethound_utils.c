@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <string.h>
+#include <net/if_arp.h>
 
 const code_name_pair_t ip_translation_table[] = {
     {PROTOCOL_TCP, "TCP"},
@@ -14,8 +15,23 @@ const code_name_pair_t icmp_translation_table[] = {{ICMP_ECHO, "Echo Request"},
                                                    {ICMP_ECHOREPLY, "Echo Reply"}};
 
 const code_name_pair_t eth_translation_table[] = {
-    {ETH_P_IP, "IPv4"},
-    {ETH_P_ARP, "ARP"},
+    {ETH_P_IP,"IPv4"},
+    {ETH_P_ARP,"ARP"},
+    {ETH_P_IPV6	,"IPv6 over bluebook"},	
+    {ETH_P_REALTEK,"Multiple proprietary protocols"}, 
+    {ETH_P_LLDP,"Link Layer Discovery Protocol"}, 
+    {ETH_P_CFM,"Connectivity Fault Management"}, 
+    {ETH_P_LOOPBACK,"Ethernet loopback packet, per IEEE 802.3"}, 
+};
+
+const code_name_pair_t arp_translation_table[] = {
+    {ARPOP_REQUEST, "ARP request"},		/* ARP request.  */
+    {ARPOP_REPLY, "ARP reply"},		    /* ARP reply.  */
+    {ARPOP_RREQUEST, "RARP request"},	/* RARP request.  */
+    {ARPOP_RREPLY,	"RARP reply"},		/* RARP reply.  */
+    {ARPOP_InREQUEST, "InARP request"},	/* InARP request.  */
+    {ARPOP_InREPLY, "InARP reply"},		/* InARP reply.  */
+    {ARPOP_NAK	, "(ATM) ARP NAK"},     /* (ATM)ARP NAK.  */
 };
 
 const char* translate(Table_id table_id, int prot_num) {
