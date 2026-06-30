@@ -142,12 +142,37 @@ int init_sigaction(){
     return 0;
 }
 
+int main(int argc, char** argv) {
+
+    char* if_name = NULL;
+    int socket_fd = -1; // just to be safe
+
+    enum parse_result result = parse_args(argc, argv, &if_name);
+
+    switch(result){
+        case HELP:
+            print_help();
+            return 0;
+            break;
+        case BIND_INTERFACE_PROCEED:
+            if(init_socket(&socket_fd, if_name) == -1)
+                return -1;
+            if(init_sigaction() == -1)
+                return -1;
+            break;
+        case ERROR:
+            fprintf(stderr, "Usage: phound [OPTIONS]\nTry 'phound -h' for more information.\n");
+            return -1; 
+    }
+
+
+    unsigned char msg_buf[IP_MAXPACKET] = {0};
+    struct stats_block stat_block = {0};
 
     while (sigint_not_received) {
         ssize_t bytes_remaining;
 
-        if ((bytes_remaining = recv(sock_fd, msg_buf, IP_MAXPACKET, 0)) == -1) {
-
+        if ((bytes_remaining = recv(socket_fd, msg_buf, IP_MAXPACKET, 0)) == -1) {
             if(errno == EINTR)
                 continue;
 
