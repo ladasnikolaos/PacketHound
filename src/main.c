@@ -41,6 +41,7 @@ struct stats_block {
 volatile sig_atomic_t sigint_not_received = 1;
 
 void sigint_handler(int signal){
+    (void) signal; 
     sigint_not_received = 0;
 }
 
