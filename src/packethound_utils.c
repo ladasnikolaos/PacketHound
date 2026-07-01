@@ -117,7 +117,15 @@ struct iphdr* parse_ip(struct ethhdr* eth_header, ssize_t* bytes_remaining) {
     }
 
     struct iphdr* ip_header = (struct iphdr*)((char*)eth_header + sizeof(struct ethhdr));
-    size_t iphl = ip_header->ihl * 4;
+    size_t iphl = ip_header->ihl; 
+
+    if(iphl < 5 ){
+        fprintf(stderr, "malformed ip header length\n");
+        return NULL;
+    }
+
+    iphl = iphl * 4; // To get the actual number of bytes of the header
+
 
     if((size_t)*bytes_remaining < iphl){
         fprintf(stderr, "malformed ip header options\n");
