@@ -105,6 +105,7 @@ int init_socket(int* socket_fd, char* if_name){
 
     if (if_index == 0) {
         perror("failed to index provided interface");
+        close(*socket_fd);
         return -1;
     }
 
@@ -115,6 +116,7 @@ int init_socket(int* socket_fd, char* if_name){
 
     if (setsockopt(*socket_fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1) {
         perror("setsockopt failure");
+        close(*socket_fd);
         return -1;
     }
 
@@ -126,6 +128,7 @@ int init_socket(int* socket_fd, char* if_name){
 
     if (bind(*socket_fd, (struct sockaddr*)&sockaddr_info, sizeof(sockaddr_info)) < 0) {
         perror("Failed to bind");
+        close(*socket_fd);
         return -1;
     }
 
