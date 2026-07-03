@@ -6,6 +6,8 @@
 #include <net/if_arp.h>
 
 
+static const char* lookup(const code_name_pair* table, size_t len, int code);
+
 const code_name_pair ip_translation_table[] = {
     {PROTOCOL_TCP, "TCP"},
     {PROTOCOL_UDP, "UDP"},
