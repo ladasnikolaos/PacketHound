@@ -5,16 +5,17 @@
 #include <string.h>
 #include <net/if_arp.h>
 
-const code_name_pair_t ip_translation_table[] = {
+
+const code_name_pair ip_translation_table[] = {
     {PROTOCOL_TCP, "TCP"},
     {PROTOCOL_UDP, "UDP"},
     {PROTOCOL_ICMP, "ICMP"},
 };
 
-const code_name_pair_t icmp_translation_table[] = {{ICMP_ECHO, "Echo Request"},
+const code_name_pair icmp_translation_table[] = {{ICMP_ECHO, "Echo Request"},
                                                    {ICMP_ECHOREPLY, "Echo Reply"}};
 
-const code_name_pair_t eth_translation_table[] = {
+const code_name_pair eth_translation_table[] = {
     {ETH_P_IP,"IPv4"},
     {ETH_P_ARP,"ARP"},
     {ETH_P_IPV6	,"IPv6 over bluebook"},	
@@ -24,7 +25,7 @@ const code_name_pair_t eth_translation_table[] = {
     {ETH_P_LOOPBACK,"Ethernet loopback packet, per IEEE 802.3"}, 
 };
 
-const code_name_pair_t arp_translation_table[] = {
+const code_name_pair arp_translation_table[] = {
     {ARPOP_REQUEST, "ARP request"},		/* ARP request.  */
     {ARPOP_REPLY, "ARP reply"},		    /* ARP reply.  */
     {ARPOP_RREQUEST, "RARP request"},	/* RARP request.  */

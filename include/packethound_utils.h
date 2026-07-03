@@ -23,15 +23,15 @@ typedef enum {
 typedef struct {
     int prot_code;
     const char* translation;
-} code_name_pair_t;
+} code_name_pair;
 
 // TODO:  Add ARP translation table and implement
-extern const code_name_pair_t ip_translation_table[];
-extern const code_name_pair_t icmp_translation_table[];
-extern const code_name_pair_t eth_translation_table[];
+extern const code_name_pair ip_translation_table[];
+extern const code_name_pair icmp_translation_table[];
+extern const code_name_pair eth_translation_table[];
+extern const code_name_pair arp_translation_table[];
 
 const char* translate(Table_id table_id, int prot_num);
-const char* lookup(const code_name_pair_t* table, size_t len, int code);
 
 struct ethhdr* parse_ethernet(unsigned char* buf, ssize_t* bytes_remaining);
 struct tcphdr* parse_tcp(struct iphdr* ip_header, ssize_t* bytes_remaining);
