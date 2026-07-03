@@ -42,16 +42,22 @@ const char* translate(Table_id table_id, int prot_num) {
                           prot_num);
         case IP:
             return lookup(ip_translation_table,
-                          sizeof(ip_translation_table) / sizeof(ip_translation_table[0]), prot_num);
+                          sizeof(ip_translation_table) / sizeof(ip_translation_table[0]), 
+                          prot_num);
         case ICMP:
             return lookup(icmp_translation_table,
                           sizeof(icmp_translation_table) / sizeof(icmp_translation_table[0]),
+                          prot_num);
+        case ARP: 
+            return lookup(arp_translation_table, 
+                          sizeof(arp_translation_table) / sizeof(arp_translation_table[0]), 
                           prot_num);
         default:
             return "Case not handled yet";
     }
 }
-const char* lookup(const code_name_pair_t* table, size_t len, int code) {
+
+const char* lookup(const code_name_pair* table, size_t len, int code) {
     for (size_t i = 0; i < len; i++) {
         if (table[i].prot_code == code)
             return table[i].translation;
@@ -190,6 +196,9 @@ struct arphdr* parse_arp(struct ethhdr* eth_header, ssize_t* bytes_remaining) {
 
     printf("ARP | Source IP : %s\n", inet_ntoa(sip_addr));
     printf("ARP | Target IP : %s\n", inet_ntoa(tip_addr));
+
+    uint16_t opcode = ntohs(arp_header->ar_op);
+    printf("ARP | opcode = %u (%s)\n", opcode, translate(ARP, opcode));
 
     *bytes_remaining -= sizeof(struct arphdr) + sizeof(struct arppld);
 
