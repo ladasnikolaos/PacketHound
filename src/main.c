@@ -80,6 +80,11 @@ enum parse_result parse_args(int argc, char** argv, char** if_name){
         }
     }
 
+    if(argc > optind){
+        fprintf(stderr, "Unrecognized input %s\n", argv[optind]);
+        return ERROR;
+    }
+
     if(i_seen && h_seen){
         fprintf(stderr, "'-i' and '-h' cant be used together.\n");
         return ERROR;
