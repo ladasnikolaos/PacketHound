@@ -12,6 +12,7 @@
 #include <netinet/ip_icmp.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
+#include <sys/types.h>
 
 typedef enum {
     ETH = 0,

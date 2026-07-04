@@ -2,7 +2,9 @@
 
 #include <arpa/inet.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
+#include <stddef.h>
 #include <net/if_arp.h>
 
 

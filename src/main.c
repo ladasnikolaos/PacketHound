@@ -1,6 +1,8 @@
 #include "packethound_utils.h"
 
 #include <stdbool.h>
+#include <stddef.h>
+#include <sys/types.h>
 #include <errno.h>
 #include <signal.h>
 #include <arpa/inet.h>
