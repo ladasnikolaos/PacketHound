@@ -147,6 +147,7 @@ int init_sigaction(){
     struct sigaction sig_action;
     sig_action.sa_handler = sigint_handler; 
     sigemptyset(&sig_action.sa_mask);
+    sig_action.sa_flags = 0;
 
     if(sigaction(SIGINT, &sig_action, NULL) == -1){
         perror("sigaction failure");
