@@ -27,7 +27,25 @@ typedef struct {
     const char* translation;
 } code_name_pair;
 
-// TODO:  Add ARP translation table and implement
+struct iterator{
+    size_t bytes_remaining;
+    const uint8_t* rd_ptr;
+};
+
+typedef enum {
+    PARSE_PACKET_SUCCESS,
+    PARSE_PACKET_FAILURE
+} parse_packet_result;
+
+typedef enum {
+    PACKET_CATEGORY_UDP_OVER_IP,
+    PACKET_CATEGORY_TCP_OVER_IP,
+    PACKET_CATEGORY_ARP,
+    PACKET_CATEGORY_ICMP,
+    PACKET_CATEGORY_NOT_HANDLED
+
+}packet_category;
+
 extern const code_name_pair ip_translation_table[];
 extern const code_name_pair icmp_translation_table[];
 extern const code_name_pair eth_translation_table[];
@@ -35,12 +53,13 @@ extern const code_name_pair arp_translation_table[];
 
 const char* translate(Table_id table_id, int prot_num);
 
-struct ethhdr* parse_ethernet(unsigned char* buf, ssize_t* bytes_remaining);
-struct tcphdr* parse_tcp(struct iphdr* ip_header, ssize_t* bytes_remaining);
-struct udphdr* parse_udp(struct iphdr* ip_header, ssize_t* bytes_remaining);
-struct arphdr* parse_arp(struct ethhdr* eth_header, ssize_t* bytes_remaining);
-struct iphdr* parse_ip(struct ethhdr* eth_header, ssize_t* bytes_remaining);
-struct icmphdr* parse_icmp(struct iphdr* ip_header, ssize_t* bytes_remaining);
+parse_packet_result parse_packet(const uint8_t *data, size_t bytes, packet_category* categ);
+parse_packet_result parse_ethernet(struct iterator* iter, uint16_t* eth_proto);
+parse_packet_result parse_tcp(struct iterator* iter);
+parse_packet_result parse_udp(struct iterator* iter);
+parse_packet_result parse_arp(struct iterator* iter);
+parse_packet_result parse_ip(struct iterator* iter, uint8_t* ip_proto);
+parse_packet_result parse_icmp(struct iterator* iter);
 
 // liberally "burrowed" from /linux/if_arp.h and defined here for convenience.
 struct arppld {
