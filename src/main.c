@@ -1,6 +1,7 @@
 #include "packethound_utils.h"
 
-#include <stdbool.h>
+#include<stdbool.h>
+#include <stdint.h>
 #include <stddef.h>
 #include <sys/types.h>
 #include <errno.h>
