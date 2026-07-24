@@ -71,164 +71,249 @@ const char* lookup(const code_name_pair* table, size_t len, int code) {
     return "Translation not found";
 }
 
-struct ethhdr* parse_ethernet(unsigned char* buf, ssize_t* bytes_remaining) {
+parse_packet_result parse_ethernet(struct iterator*  iter, uint16_t* eth_proto) {
 
-    //  NOTE:  I think im in the clear to cast bytes_remaining to size_t here. 
-    //         The negative case is handled in main, might reconsider.
-    if((size_t)*bytes_remaining < sizeof(struct ethhdr)){
+    if(iter->bytes_remaining< sizeof(struct ethhdr)){
         fprintf(stderr, "malformed eth header\n");
-        return NULL;
+        return PARSE_PACKET_FAILURE;
     }
 
-    struct ethhdr* eth_header = (struct ethhdr*)buf;
+    struct ethhdr eth_header = {0};
+    memcpy(&eth_header,iter->rd_ptr,sizeof(struct ethhdr));
 
-    printf("\n\nMAC_SRC=%02x:%02x:%02x:%02x:%02x:%02x\n", eth_header->h_source[0],
-           eth_header->h_source[1], eth_header->h_source[2], eth_header->h_source[3],
-           eth_header->h_source[4], eth_header->h_source[5]);
+    printf("\n\nMAC_SRC=%02x:%02x:%02x:%02x:%02x:%02x\n", eth_header.h_source[0],
+           eth_header.h_source[1], eth_header.h_source[2], eth_header.h_source[3],
+           eth_header.h_source[4], eth_header.h_source[5]);
 
-    printf("MAC_DST=%02x:%02x:%02x:%02x:%02x:%02x\n", eth_header->h_dest[0], eth_header->h_dest[1],
-           eth_header->h_dest[2], eth_header->h_dest[3], eth_header->h_dest[4],
-           eth_header->h_dest[5]);
+    printf("MAC_DST=%02x:%02x:%02x:%02x:%02x:%02x\n", eth_header.h_dest[0], eth_header.h_dest[1],
+           eth_header.h_dest[2], eth_header.h_dest[3], eth_header.h_dest[4],
+           eth_header.h_dest[5]);
 
-    printf("Eth type : %04x (%s)\n", ntohs(eth_header->h_proto),
-           translate(ETH, ntohs(eth_header->h_proto)));
+    *eth_proto = ntohs(eth_header.h_proto);
+    printf("Eth type : %04x (%s)\n", *eth_proto,
+           translate(TABLE_ETH, ntohs(eth_header.h_proto)));
 
-    *bytes_remaining -= sizeof(struct ethhdr);
+    iter->rd_ptr += sizeof(struct ethhdr);
+    iter->bytes_remaining -= sizeof(struct ethhdr);
 
-    return eth_header;
+    return PARSE_PACKET_SUCCESS;
 }
 
-struct tcphdr* parse_tcp(struct iphdr* ip_header, ssize_t* bytes_remaining) {
+parse_packet_result parse_tcp(struct iterator*  iter) {
 
-    if((size_t) *bytes_remaining < sizeof(struct tcphdr)){
+    if( iter->bytes_remaining < sizeof(struct tcphdr)){
         fprintf(stderr, "malformed tcp header\n");
-        return NULL;
+        return PARSE_PACKET_FAILURE;
     }
-    struct tcphdr* tcp_header = (struct tcphdr*)((char*)ip_header + ip_header->ihl * 4);
-    size_t tcp_doff_bytes = tcp_header->doff * 4;
+    struct tcphdr tcp_header = {0};
+    memcpy(&tcp_header,iter->rd_ptr,sizeof(struct tcphdr));
 
-    if((size_t)*bytes_remaining < tcp_doff_bytes ){
+
+    if(tcp_header.doff < 5){
         fprintf(stderr,"malformed tcp header data\n");
-        return NULL;
+        return PARSE_PACKET_FAILURE;
     }
 
-    printf("TCP | Source address = %u\n", ntohs(tcp_header->source));
-    printf("TCP | Destination address = %u\n", ntohs(tcp_header->dest));
+    size_t tcp_doff_bytes = tcp_header.doff * 4;
 
-    *bytes_remaining -= tcp_doff_bytes;
 
-    return tcp_header;
+    if(iter->bytes_remaining < tcp_doff_bytes ){
+        fprintf(stderr,"malformed tcp header data\n");
+        return PARSE_PACKET_FAILURE;
+    }
+
+    printf("TCP | Source address = %u\n", ntohs(tcp_header.source));
+    printf("TCP | Destination address = %u\n", ntohs(tcp_header.dest));
+
+    iter->bytes_remaining -= tcp_doff_bytes;
+    iter->rd_ptr += tcp_doff_bytes;
+
+    return PARSE_PACKET_SUCCESS;
 }
 
-struct iphdr* parse_ip(struct ethhdr* eth_header, ssize_t* bytes_remaining) {
+parse_packet_result parse_ip(struct iterator*  iter, uint8_t* ip_proto) {
 
-    if((size_t)*bytes_remaining < sizeof(struct iphdr) ){
+    if(iter->bytes_remaining< sizeof(struct iphdr) ){
         fprintf(stderr, "malformed ip header\n");
-        return NULL;
+        return PARSE_PACKET_FAILURE;
     }
 
-    struct iphdr* ip_header = (struct iphdr*)((char*)eth_header + sizeof(struct ethhdr));
-    size_t iphl = ip_header->ihl; 
+    struct iphdr ip_header = {0};
+    memcpy(&ip_header,iter->rd_ptr,sizeof(struct iphdr));
+    size_t iphl = ip_header.ihl; 
+
 
     if(iphl < 5 ){
         fprintf(stderr, "malformed ip header length\n");
-        return NULL;
+        return PARSE_PACKET_FAILURE;
     }
 
     iphl = iphl * 4; // To get the actual number of bytes of the header
 
 
-    if((size_t)*bytes_remaining < iphl){
+    if(iter->bytes_remaining < iphl){
         fprintf(stderr, "malformed ip header options\n");
-        return NULL;
+        return PARSE_PACKET_FAILURE;
     }
 
+
+    *ip_proto = ip_header.protocol;
+
     struct in_addr inaddr;
-    inaddr.s_addr = ip_header->saddr;
+    inaddr.s_addr = ip_header.saddr;
 
     struct in_addr outaddr;
-    outaddr.s_addr = ip_header->daddr;
+    outaddr.s_addr = ip_header.daddr;
 
     printf("IP | Source IP address = %s\n", inet_ntoa(inaddr));
     printf("IP | Destination IP address = %s\n", inet_ntoa(outaddr));
 
-    *bytes_remaining -= iphl;
+    iter->bytes_remaining -= iphl;
+    iter->rd_ptr+=iphl;
 
-    return ip_header;
+    return PARSE_PACKET_SUCCESS;
 }
 
-struct udphdr* parse_udp(struct iphdr* ip_header, ssize_t* bytes_remaining) {
+parse_packet_result parse_udp(struct iterator* iter) {
 
-    if((size_t)*bytes_remaining < sizeof(struct udphdr)){
+    if(iter->bytes_remaining< sizeof(struct udphdr)){
 
         fprintf(stderr,"malformed udp header\n");
-        return NULL;
+        return PARSE_PACKET_FAILURE;
     }
 
-    struct udphdr* udp_header = (struct udphdr*)((char*)ip_header + ip_header->ihl * 4);
+    struct udphdr udp_header = {0};
+    memcpy(&udp_header, iter->rd_ptr, sizeof(struct udphdr));
 
-    printf("UDP | Source port = %u\n", ntohs(udp_header->source));
-    printf("UDP | Destination port = %u\n", ntohs(udp_header->dest));
 
-    *bytes_remaining -= sizeof(struct udphdr);
+    printf("UDP | Source port = %u\n", ntohs(udp_header.source));
+    printf("UDP | Destination port = %u\n", ntohs(udp_header.dest));
 
-    return udp_header;
+    iter->bytes_remaining -= sizeof(struct udphdr);
+    iter->rd_ptr += sizeof(struct udphdr);
+
+    return PARSE_PACKET_SUCCESS;
 }
 
-struct arphdr* parse_arp(struct ethhdr* eth_header, ssize_t* bytes_remaining) {
+parse_packet_result parse_arp(struct iterator* iter) {
 
-    if((size_t)*bytes_remaining < sizeof(struct arphdr) + sizeof(struct arppld)){
+    if(iter->bytes_remaining < sizeof(struct arphdr) + sizeof(struct arppld)){
         fprintf(stderr,"malformed arp header\n");
-        return NULL;
+        return PARSE_PACKET_FAILURE;
     }
 
-    struct arphdr* arp_header = (struct arphdr*)((char*)eth_header + sizeof(struct ethhdr));
+    struct arphdr arp_header = {0};
+    memcpy(&arp_header,iter->rd_ptr,sizeof(struct arphdr));
 
-    struct arppld* arp_payload = (struct arppld*)((char*)arp_header + sizeof(struct arphdr));
+    iter->rd_ptr += sizeof(struct arphdr);
+    iter->bytes_remaining -= sizeof(struct arphdr);
+
+    struct arppld arp_payload = {0};
+    memcpy(&arp_payload,iter->rd_ptr,sizeof(struct arppld));
+
+    iter->rd_ptr += sizeof(struct arppld);
+    iter->bytes_remaining -= sizeof(struct arppld);
+
 
     struct in_addr sip_addr, tip_addr;
 
-    memcpy(&sip_addr.s_addr, arp_payload->ar_sip, 4);
-    memcpy(&tip_addr.s_addr, arp_payload->ar_tip, 4);
+    memcpy(&sip_addr.s_addr, arp_payload.ar_sip, 4);
+    memcpy(&tip_addr.s_addr, arp_payload.ar_tip, 4);
 
-    printf("ARP | Source MAC : %02x:%02x:%02x:%02x:%02x:%02x\n", arp_payload->ar_sha[0],
-           arp_payload->ar_sha[1], arp_payload->ar_sha[2], arp_payload->ar_sha[3],
-           arp_payload->ar_sha[4], arp_payload->ar_sha[5]);
+    printf("ARP | Source MAC : %02x:%02x:%02x:%02x:%02x:%02x\n", arp_payload.ar_sha[0],
+           arp_payload.ar_sha[1], arp_payload.ar_sha[2], arp_payload.ar_sha[3],
+           arp_payload.ar_sha[4], arp_payload.ar_sha[5]);
 
-    printf("ARP | Target MAC : %02x:%02x:%02x:%02x:%02x:%02x\n", arp_payload->ar_tha[0],
-           arp_payload->ar_tha[1], arp_payload->ar_tha[2], arp_payload->ar_tha[3],
-           arp_payload->ar_tha[4], arp_payload->ar_tha[5]);
+    printf("ARP | Target MAC : %02x:%02x:%02x:%02x:%02x:%02x\n", arp_payload.ar_tha[0],
+           arp_payload.ar_tha[1], arp_payload.ar_tha[2], arp_payload.ar_tha[3],
+           arp_payload.ar_tha[4], arp_payload.ar_tha[5]);
 
     printf("ARP | Source IP : %s\n", inet_ntoa(sip_addr));
     printf("ARP | Target IP : %s\n", inet_ntoa(tip_addr));
 
-    uint16_t opcode = ntohs(arp_header->ar_op);
-    printf("ARP | opcode = %u (%s)\n", opcode, translate(ARP, opcode));
+    uint16_t opcode = ntohs(arp_header.ar_op);
+    printf("ARP | opcode = %u (%s)\n", opcode, translate(TABLE_ARP, opcode));
 
-    *bytes_remaining -= sizeof(struct arphdr) + sizeof(struct arppld);
-
-    return arp_header;
+    return PARSE_PACKET_SUCCESS;
 }
 
-struct icmphdr* parse_icmp(struct iphdr* ip_header, ssize_t* bytes_remaining) {
+parse_packet_result parse_icmp(struct iterator* iter) {
 
-    if((size_t)*bytes_remaining < sizeof(struct icmphdr)){
+    if(iter->bytes_remaining < sizeof(struct icmphdr)){
 
         fprintf(stderr,"malformed icmp header\n");
-        return NULL;
+        return PARSE_PACKET_FAILURE;
     }
 
-    struct icmphdr* icmp_header = (struct icmphdr*)((char*)ip_header + ip_header->ihl * 4);
+    struct icmphdr icmp_header = {0};
+    memcpy(&icmp_header,iter->rd_ptr,sizeof(struct icmphdr));
 
-    printf("ICMP | icmp_type = %u (%s), icmp_code = %u \n", icmp_header->type,
-           translate(ICMP, icmp_header->type), icmp_header->code);
+    printf("ICMP | icmp_type = %u (%s), icmp_code = %u \n", icmp_header.type,
+           translate(TABLE_ICMP, icmp_header.type), icmp_header.code);
 
-    if (icmp_header->type == ICMP_ECHO || icmp_header->type == ICMP_ECHOREPLY)
-        printf("ICMP | icmp_echo_id = %u, icmp_echo_seq = %u\n", ntohs(icmp_header->un.echo.id),
-               ntohs(icmp_header->un.echo.sequence));
+    if (icmp_header.type == ICMP_ECHO || icmp_header.type == ICMP_ECHOREPLY)
+        printf("ICMP | icmp_echo_id = %u, icmp_echo_seq = %u\n", ntohs(icmp_header.un.echo.id),
+               ntohs(icmp_header.un.echo.sequence));
 
-    *bytes_remaining -= sizeof(struct icmphdr);
 
-    return icmp_header;
+    iter->rd_ptr += sizeof(struct icmphdr);
+    iter->bytes_remaining -= sizeof(struct icmphdr);
+
+    return PARSE_PACKET_SUCCESS;
 }
 
+
+
+parse_packet_result parse_packet(const uint8_t *data, size_t bytes, packet_category* categ){
+
+        struct iterator iter = {
+            .bytes_remaining = bytes,
+            .rd_ptr = data 
+        };
+
+        uint16_t eth_proto;
+
+        if ((parse_ethernet(&iter, &eth_proto)) == PARSE_PACKET_FAILURE)
+            return PARSE_PACKET_FAILURE;
+
+        if (eth_proto == ETH_P_IP) {
+
+            uint8_t ip_proto;
+            if((parse_ip(&iter,&ip_proto))== PARSE_PACKET_FAILURE)
+                return PARSE_PACKET_FAILURE;
+
+            switch (ip_proto) {
+                case PROTOCOL_TCP: {
+                    if ((parse_tcp(&iter)) == PARSE_PACKET_FAILURE)
+                        return PARSE_PACKET_FAILURE;
+                    *categ = PACKET_CATEGORY_TCP_OVER_IP;
+                    return PARSE_PACKET_SUCCESS;
+                }
+                case PROTOCOL_UDP: {
+                    if ((parse_udp(&iter)) == PARSE_PACKET_FAILURE)
+                        return PARSE_PACKET_FAILURE;
+                    *categ = PACKET_CATEGORY_UDP_OVER_IP;
+                    return PARSE_PACKET_SUCCESS;
+                }
+                case PROTOCOL_ICMP: {
+                    if ((parse_icmp(&iter)) == PARSE_PACKET_FAILURE)
+                        return PARSE_PACKET_FAILURE;
+                    *categ = PACKET_CATEGORY_ICMP;
+                    return PARSE_PACKET_SUCCESS;
+                }
+            default :
+                *categ = PACKET_CATEGORY_NOT_HANDLED;
+                return PARSE_PACKET_SUCCESS;
+            }
+        }
+        else if (eth_proto == ETH_P_ARP) {
+                if ((parse_arp(&iter)) == PARSE_PACKET_FAILURE)
+                    return PARSE_PACKET_FAILURE;
+                *categ = PACKET_CATEGORY_ARP;
+                return PARSE_PACKET_SUCCESS;
+            } 
+        else{
+            *categ = PACKET_CATEGORY_NOT_HANDLED;
+            return PARSE_PACKET_SUCCESS;
+        }
+}

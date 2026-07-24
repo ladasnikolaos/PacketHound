@@ -38,8 +38,8 @@ struct stats_block {
     unsigned int udp_over_ip_count;
     unsigned int icmp_count; 
     unsigned int arp_count;
+    unsigned int not_handled;
 };
-
 
 volatile sig_atomic_t sigint_not_received = 1;
 
@@ -180,14 +180,15 @@ int main(int argc, char** argv) {
             return -1; 
     }
 
-
-    unsigned char msg_buf[IP_MAXPACKET] = {0};
+    uint8_t msg_buf[IP_MAXPACKET] = {0};
     struct stats_block stat_block = {0};
 
     while (sigint_not_received) {
-        ssize_t bytes_remaining;
+        ssize_t recv_ret;
 
-        if ((bytes_remaining = recv(socket_fd, msg_buf, IP_MAXPACKET, 0)) == -1) {
+        packet_category categ = PACKET_CATEGORY_NOT_HANDLED;
+
+        if ((recv_ret = recv(socket_fd, msg_buf, IP_MAXPACKET, 0)) == -1) {
             if(errno == EINTR)
                 continue;
 
@@ -195,49 +196,33 @@ int main(int argc, char** argv) {
             return -1;
         }
 
-        struct ethhdr* eth_header;
-        if ((eth_header = parse_ethernet(msg_buf, &bytes_remaining)) == NULL)
+        size_t bytes = (size_t)recv_ret;
+
+        parse_packet_result exit_code;
+        if((exit_code = parse_packet(msg_buf,bytes,&categ)) ==  PARSE_PACKET_FAILURE)
             continue;
 
-        if (ntohs(eth_header->h_proto) == ETH_P_IP) {
-
-            struct iphdr* ip_header;
-            if((ip_header = parse_ip(eth_header, &bytes_remaining))==NULL)
-                continue;
-
-            switch (ip_header->protocol) {
-                case PROTOCOL_TCP: {
-                    struct tcphdr* tcp_header;
-                    if ((tcp_header = parse_tcp(ip_header, &bytes_remaining)) == NULL)
-                        continue;
-                    stat_block.total_packet_count++;
-                    stat_block.tcp_over_ip_count++;
-                    break;
-                }
-                case PROTOCOL_UDP: {
-                    struct udphdr* udp_header;
-                    if ((udp_header = parse_udp(ip_header, &bytes_remaining)) == NULL)
-                        continue;
-
-                    stat_block.total_packet_count++;
-                    stat_block.udp_over_ip_count++;
-                    break;
-                }
-                case PROTOCOL_ICMP: {
-                    struct icmphdr* icmp_header;
-                    if ((icmp_header = parse_icmp(ip_header, &bytes_remaining)) == NULL)
-                        continue;
-                    stat_block.total_packet_count++;
-                    stat_block.icmp_count++;
-                    break;
-                }
-            }
-        } else if (ntohs(eth_header->h_proto) == ETH_P_ARP) {
-            struct arphdr* arp_header;
-            if ((arp_header = parse_arp(eth_header, &bytes_remaining)) == NULL)
-                continue;
-            stat_block.total_packet_count++;
-            stat_block.arp_count++;
+        switch(categ){
+            case PACKET_CATEGORY_UDP_OVER_IP:
+                stat_block.total_packet_count++;
+                stat_block.udp_over_ip_count++;
+                break;
+            case PACKET_CATEGORY_TCP_OVER_IP:
+                stat_block.total_packet_count++;
+                stat_block.tcp_over_ip_count++;
+                break;
+            case PACKET_CATEGORY_ARP:              
+                stat_block.total_packet_count++;
+                stat_block.arp_count++;
+                break;
+            case PACKET_CATEGORY_ICMP:
+                stat_block.total_packet_count++;
+                stat_block.icmp_count++;
+                break;
+            case PACKET_CATEGORY_NOT_HANDLED:
+                stat_block.total_packet_count++;
+                stat_block.not_handled++;
+                break;
         }
     }
 
@@ -247,12 +232,18 @@ int main(int argc, char** argv) {
            "\tTCP/IP packets : %u\n"
            "\tUDP/IP packets : %u\n"
            "\tICMP packets : %u\n"
-           "\tARP packets : %u\n",
+           "\tARP packets : %u\n"
+           "\tUnhandled cases : %u\n",
            stat_block.total_packet_count,
            stat_block.tcp_over_ip_count,
            stat_block.udp_over_ip_count,
            stat_block.icmp_count,
-           stat_block.arp_count
+           stat_block.arp_count,
+           stat_block.not_handled
            );
 
 }
+
+
+
+
