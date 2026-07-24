@@ -19,17 +19,11 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-/*
- *
- *  TODO:  Possible architectural overhaul. TBD. 
- *  TODO:  Passing around pointers to structs like that feels a little clunky, maybe rethink? 
- *  
- */
 
-enum parse_result {
-    BIND_INTERFACE_PROCEED=0,
-    ERROR = 1,
-    HELP = 2
+enum parse_cli_result {
+    PARSE_CLI_BIND_INTERFACE_PROCEED=0,
+    PARSE_CLI_ERROR = 1,
+    PARSE_CLI_HELP = 2
 };
 
 struct stats_block {
@@ -57,12 +51,12 @@ void print_help(void) {
            );
 }
 
-enum parse_result parse_args(int argc, char** argv, char** if_name){
+enum parse_cli_result parse_args(int argc, char** argv, char** if_name){
     bool h_seen = false, i_seen = false; 
     int opt;
 
     if (argc < 2) {
-        return ERROR;
+        return PARSE_CLI_ERROR;
     }
 
     while ((opt = getopt(argc, argv, ":i:h")) != -1) {
@@ -76,28 +70,28 @@ enum parse_result parse_args(int argc, char** argv, char** if_name){
                 break;
             case '?':
                 fprintf(stderr, "Unrecognized flag '-%c'\n", optopt);
-                return ERROR;
+                return PARSE_CLI_ERROR;
             case ':':
                 fprintf(stderr, "Flag '-%c' required an argument.\n", optopt);
-                return ERROR;
+                return PARSE_CLI_ERROR;
         }
     }
 
     if(argc > optind){
         fprintf(stderr, "Unrecognized input %s\n", argv[optind]);
-        return ERROR;
+        return PARSE_CLI_ERROR;
     }
 
     if(i_seen && h_seen){
         fprintf(stderr, "'-i' and '-h' cant be used together.\n");
-        return ERROR;
+        return PARSE_CLI_ERROR;
     } else if (h_seen){
-        return HELP;
+        return PARSE_CLI_HELP;
     } else if (!i_seen) {
         fprintf(stderr, "Interface not provided.\n");
-        return ERROR;
+        return PARSE_CLI_ERROR;
     } else
-        return BIND_INTERFACE_PROCEED;
+        return PARSE_CLI_BIND_INTERFACE_PROCEED;
 }
 
 
@@ -162,20 +156,20 @@ int main(int argc, char** argv) {
     char* if_name = NULL;
     int socket_fd = -1; // just to be safe
 
-    enum parse_result result = parse_args(argc, argv, &if_name);
+    enum parse_cli_result result = parse_args(argc, argv, &if_name);
 
     switch(result){
-        case HELP:
+        case PARSE_CLI_HELP:
             print_help();
             return 0;
             break;
-        case BIND_INTERFACE_PROCEED:
+        case PARSE_CLI_BIND_INTERFACE_PROCEED:
             if(init_socket(&socket_fd, if_name) == -1)
                 return -1;
             if(init_sigaction() == -1)
                 return -1;
             break;
-        case ERROR:
+        case PARSE_CLI_ERROR:
             fprintf(stderr, "Usage: phound [OPTIONS]\nTry 'phound -h' for more information.\n");
             return -1; 
     }
