@@ -16,10 +16,10 @@
 #include <sys/types.h>
 
 typedef enum {
-    ETH = 0,
-    IP = 1,
-    ARP = 2,
-    ICMP = 3,
+    TABLE_ETH = 0,
+    TABLE_IP = 1,
+    TABLE_ARP = 2,
+    TABLE_ICMP = 3,
 } Table_id;
 
 typedef struct {

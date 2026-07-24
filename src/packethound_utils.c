@@ -41,19 +41,19 @@ const code_name_pair arp_translation_table[] = {
 
 const char* translate(Table_id table_id, int prot_num) {
     switch (table_id) {
-        case ETH:
+        case TABLE_ETH:
             return lookup(eth_translation_table,
                           sizeof(eth_translation_table) / sizeof(eth_translation_table[0]),
                           prot_num);
-        case IP:
+        case TABLE_IP:
             return lookup(ip_translation_table,
                           sizeof(ip_translation_table) / sizeof(ip_translation_table[0]), 
                           prot_num);
-        case ICMP:
+        case TABLE_ICMP:
             return lookup(icmp_translation_table,
                           sizeof(icmp_translation_table) / sizeof(icmp_translation_table[0]),
                           prot_num);
-        case ARP: 
+        case TABLE_ARP: 
             return lookup(arp_translation_table, 
                           sizeof(arp_translation_table) / sizeof(arp_translation_table[0]), 
                           prot_num);
