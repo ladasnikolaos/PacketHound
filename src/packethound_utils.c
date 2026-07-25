@@ -1,6 +1,7 @@
 #include "packethound_utils.h"
 
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -11,9 +12,9 @@
 static const char* lookup(const code_name_pair* table, size_t len, int code);
 
 const code_name_pair ip_translation_table[] = {
-    {PROTOCOL_TCP, "TCP"},
-    {PROTOCOL_UDP, "UDP"},
-    {PROTOCOL_ICMP, "ICMP"},
+    {IPPROTO_TCP, "TCP"},
+    {IPPROTO_UDP, "UDP"},
+    {IPPROTO_ICMP, "ICMP"},
 };
 
 const code_name_pair icmp_translation_table[] = {{ICMP_ECHO, "Echo Request"},
@@ -283,19 +284,19 @@ parse_packet_result parse_packet(const uint8_t *data, size_t bytes, packet_categ
                 return PARSE_PACKET_FAILURE;
 
             switch (ip_proto) {
-                case PROTOCOL_TCP: {
+                case IPPROTO_TCP: {
                     if ((parse_tcp(&iter)) == PARSE_PACKET_FAILURE)
                         return PARSE_PACKET_FAILURE;
                     *categ = PACKET_CATEGORY_TCP_OVER_IP;
                     return PARSE_PACKET_SUCCESS;
                 }
-                case PROTOCOL_UDP: {
+                case IPPROTO_UDP: {
                     if ((parse_udp(&iter)) == PARSE_PACKET_FAILURE)
                         return PARSE_PACKET_FAILURE;
                     *categ = PACKET_CATEGORY_UDP_OVER_IP;
                     return PARSE_PACKET_SUCCESS;
                 }
-                case PROTOCOL_ICMP: {
+                case IPPROTO_ICMP: {
                     if ((parse_icmp(&iter)) == PARSE_PACKET_FAILURE)
                         return PARSE_PACKET_FAILURE;
                     *categ = PACKET_CATEGORY_ICMP;
