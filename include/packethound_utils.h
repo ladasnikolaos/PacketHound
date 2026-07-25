@@ -46,12 +46,6 @@ typedef enum {
 
 
 parse_packet_result parse_packet(const uint8_t *data, size_t bytes, packet_category* categ);
-parse_packet_result parse_ethernet(struct iterator* iter, uint16_t* eth_proto);
-parse_packet_result parse_tcp(struct iterator* iter);
-parse_packet_result parse_udp(struct iterator* iter);
-parse_packet_result parse_arp(struct iterator* iter);
-parse_packet_result parse_ip(struct iterator* iter, uint8_t* ip_proto);
-parse_packet_result parse_icmp(struct iterator* iter);
 
 // liberally "burrowed" from /linux/if_arp.h and defined here for convenience.
 struct arppld {
