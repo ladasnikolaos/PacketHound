@@ -47,7 +47,6 @@ typedef enum {
 }packet_category;
 
 
-const char* translate(Table_id table_id, int prot_num);
 
 parse_packet_result parse_packet(const uint8_t *data, size_t bytes, packet_category* categ);
 parse_packet_result parse_ethernet(struct iterator* iter, uint16_t* eth_proto);
