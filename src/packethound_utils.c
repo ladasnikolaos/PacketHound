@@ -11,6 +11,11 @@
 
 static const char* lookup(const code_name_pair* table, size_t len, int code);
 
+struct iterator{
+    size_t bytes_remaining;
+    const uint8_t* rd_ptr;
+};
+
 const code_name_pair ip_translation_table[] = {
     {IPPROTO_TCP, "TCP"},
     {IPPROTO_UDP, "UDP"},

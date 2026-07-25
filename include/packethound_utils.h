@@ -24,11 +24,6 @@ typedef struct {
     const char* translation;
 } code_name_pair;
 
-struct iterator{
-    size_t bytes_remaining;
-    const uint8_t* rd_ptr;
-};
-
 typedef enum {
     PARSE_PACKET_SUCCESS,
     PARSE_PACKET_FAILURE
