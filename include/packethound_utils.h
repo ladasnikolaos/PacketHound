@@ -46,10 +46,6 @@ typedef enum {
 
 }packet_category;
 
-extern const code_name_pair ip_translation_table[];
-extern const code_name_pair icmp_translation_table[];
-extern const code_name_pair eth_translation_table[];
-extern const code_name_pair arp_translation_table[];
 
 const char* translate(Table_id table_id, int prot_num);
 
