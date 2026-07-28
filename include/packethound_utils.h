@@ -31,12 +31,5 @@ typedef enum {
 
 parse_packet_result parse_packet(const uint8_t *data, size_t bytes, packet_category* categ);
 
-// liberally "burrowed" from /linux/if_arp.h and defined here for convenience.
-struct arppld {
-    unsigned char ar_sha[ETH_ALEN]; /* sender hardware address	*/
-    unsigned char ar_sip[4];        /* sender IP address		*/
-    unsigned char ar_tha[ETH_ALEN]; /* target hardware address	*/
-    unsigned char ar_tip[4];        /* target IP address		*/
-};
 
 #endif

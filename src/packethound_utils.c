@@ -27,6 +27,17 @@ struct iterator{
     const uint8_t* rd_ptr;
 };
 
+
+
+
+// liberally "burrowed" from /linux/if_arp.h and defined here for convenience.
+struct arppld {
+    unsigned char ar_sha[ETH_ALEN]; /* sender hardware address	*/
+    unsigned char ar_sip[4];        /* sender IP address		*/
+    unsigned char ar_tha[ETH_ALEN]; /* target hardware address	*/
+    unsigned char ar_tip[4];        /* target IP address		*/
+};
+
 const code_name_pair ip_translation_table[] = {
     {IPPROTO_TCP, "TCP"},
     {IPPROTO_UDP, "UDP"},
