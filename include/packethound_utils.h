@@ -12,10 +12,6 @@
 #include <netinet/udp.h>
 #include <sys/types.h>
 
-typedef struct {
-    int prot_code;
-    const char* translation;
-} code_name_pair;
 
 typedef enum {
     PARSE_PACKET_SUCCESS,
