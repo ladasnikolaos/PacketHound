@@ -1,12 +1,17 @@
 #include "packethound_utils.h"
 
+#include <net/if_arp.h>
+#include <netinet/if_ether.h>
+#include <netinet/ip.h>
+#include <netinet/ip_icmp.h>
+#include <netinet/tcp.h>
+#include <netinet/udp.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <stddef.h>
-#include <net/if_arp.h>
 
 
 typedef enum {
