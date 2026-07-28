@@ -43,16 +43,16 @@ struct arppld {
     unsigned char ar_tip[4];        /* target IP address		*/
 };
 
-const code_name_pair ip_translation_table[] = {
+static const code_name_pair ip_translation_table[] = {
     {IPPROTO_TCP, "TCP"},
     {IPPROTO_UDP, "UDP"},
     {IPPROTO_ICMP, "ICMP"},
 };
 
-const code_name_pair icmp_translation_table[] = {{ICMP_ECHO, "Echo Request"},
+static const code_name_pair icmp_translation_table[] = {{ICMP_ECHO, "Echo Request"},
                                                    {ICMP_ECHOREPLY, "Echo Reply"}};
 
-const code_name_pair eth_translation_table[] = {
+static const code_name_pair eth_translation_table[] = {
     {ETH_P_IP,"IPv4"},
     {ETH_P_ARP,"ARP"},
     {ETH_P_IPV6	,"IPv6 over bluebook"},	
@@ -62,7 +62,7 @@ const code_name_pair eth_translation_table[] = {
     {ETH_P_LOOPBACK,"Ethernet loopback packet, per IEEE 802.3"}, 
 };
 
-const code_name_pair arp_translation_table[] = {
+static const code_name_pair arp_translation_table[] = {
     {ARPOP_REQUEST, "ARP request"},		/* ARP request.  */
     {ARPOP_REPLY, "ARP reply"},		    /* ARP reply.  */
     {ARPOP_RREQUEST, "RARP request"},	/* RARP request.  */
@@ -74,7 +74,7 @@ const code_name_pair arp_translation_table[] = {
 
 
 
-const char* lookup(const code_name_pair* table, size_t len, int code) {
+static const char* lookup(const code_name_pair* table, size_t len, int code) {
     for (size_t i = 0; i < len; i++) {
         if (table[i].prot_code == code)
             return table[i].translation;
@@ -83,7 +83,7 @@ const char* lookup(const code_name_pair* table, size_t len, int code) {
     return "Translation not found";
 }
 
-const char* translate(Table_id table_id, int prot_num) {
+static const char* translate(Table_id table_id, int prot_num) {
     switch (table_id) {
         case TABLE_ETH:
             return lookup(eth_translation_table,
@@ -107,7 +107,7 @@ const char* translate(Table_id table_id, int prot_num) {
 }
 
 
-parse_packet_result parse_ethernet(struct iterator*  iter, uint16_t* eth_proto) {
+static parse_packet_result parse_ethernet(struct iterator*  iter, uint16_t* eth_proto) {
 
     if(iter->bytes_remaining< sizeof(struct ethhdr)){
         fprintf(stderr, "malformed eth header\n");
@@ -135,7 +135,7 @@ parse_packet_result parse_ethernet(struct iterator*  iter, uint16_t* eth_proto) 
     return PARSE_PACKET_SUCCESS;
 }
 
-parse_packet_result parse_tcp(struct iterator*  iter) {
+static parse_packet_result parse_tcp(struct iterator*  iter) {
 
     if( iter->bytes_remaining < sizeof(struct tcphdr)){
         fprintf(stderr, "malformed tcp header\n");
@@ -167,7 +167,7 @@ parse_packet_result parse_tcp(struct iterator*  iter) {
     return PARSE_PACKET_SUCCESS;
 }
 
-parse_packet_result parse_ip(struct iterator*  iter, uint8_t* ip_proto) {
+static parse_packet_result parse_ip(struct iterator*  iter, uint8_t* ip_proto) {
 
     if(iter->bytes_remaining< sizeof(struct iphdr) ){
         fprintf(stderr, "malformed ip header\n");
@@ -210,7 +210,7 @@ parse_packet_result parse_ip(struct iterator*  iter, uint8_t* ip_proto) {
     return PARSE_PACKET_SUCCESS;
 }
 
-parse_packet_result parse_udp(struct iterator* iter) {
+static parse_packet_result parse_udp(struct iterator* iter) {
 
     if(iter->bytes_remaining< sizeof(struct udphdr)){
 
@@ -231,7 +231,7 @@ parse_packet_result parse_udp(struct iterator* iter) {
     return PARSE_PACKET_SUCCESS;
 }
 
-parse_packet_result parse_arp(struct iterator* iter) {
+static parse_packet_result parse_arp(struct iterator* iter) {
 
     if(iter->bytes_remaining < sizeof(struct arphdr) + sizeof(struct arppld)){
         fprintf(stderr,"malformed arp header\n");
@@ -273,7 +273,7 @@ parse_packet_result parse_arp(struct iterator* iter) {
     return PARSE_PACKET_SUCCESS;
 }
 
-parse_packet_result parse_icmp(struct iterator* iter) {
+static parse_packet_result parse_icmp(struct iterator* iter) {
 
     if(iter->bytes_remaining < sizeof(struct icmphdr)){
 
