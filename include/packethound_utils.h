@@ -10,8 +10,7 @@
 #include <netinet/ip_icmp.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
-#include <sys/types.h>
-
+#include <stddef.h>
 
 typedef enum {
     PARSE_PACKET_SUCCESS,
