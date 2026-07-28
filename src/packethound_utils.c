@@ -9,7 +9,6 @@
 #include <net/if_arp.h>
 
 
-static const char* lookup(const code_name_pair* table, size_t len, int code);
 typedef enum {
     TABLE_ETH = 0,
     TABLE_IP = 1,
@@ -52,6 +51,17 @@ const code_name_pair arp_translation_table[] = {
     {ARPOP_NAK	, "(ATM) ARP NAK"},     /* (ATM)ARP NAK.  */
 };
 
+
+
+const char* lookup(const code_name_pair* table, size_t len, int code) {
+    for (size_t i = 0; i < len; i++) {
+        if (table[i].prot_code == code)
+            return table[i].translation;
+    }
+
+    return "Translation not found";
+}
+
 const char* translate(Table_id table_id, int prot_num) {
     switch (table_id) {
         case TABLE_ETH:
@@ -75,14 +85,6 @@ const char* translate(Table_id table_id, int prot_num) {
     }
 }
 
-const char* lookup(const code_name_pair* table, size_t len, int code) {
-    for (size_t i = 0; i < len; i++) {
-        if (table[i].prot_code == code)
-            return table[i].translation;
-    }
-
-    return "Translation not found";
-}
 
 parse_packet_result parse_ethernet(struct iterator*  iter, uint16_t* eth_proto) {
 
