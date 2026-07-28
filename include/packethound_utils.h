@@ -12,13 +12,6 @@
 #include <netinet/udp.h>
 #include <sys/types.h>
 
-typedef enum {
-    TABLE_ETH = 0,
-    TABLE_IP = 1,
-    TABLE_ARP = 2,
-    TABLE_ICMP = 3,
-} Table_id;
-
 typedef struct {
     int prot_code;
     const char* translation;

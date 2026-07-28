@@ -10,6 +10,13 @@
 
 
 static const char* lookup(const code_name_pair* table, size_t len, int code);
+typedef enum {
+    TABLE_ETH = 0,
+    TABLE_IP = 1,
+    TABLE_ARP = 2,
+    TABLE_ICMP = 3,
+} Table_id;
+
 
 struct iterator{
     size_t bytes_remaining;
