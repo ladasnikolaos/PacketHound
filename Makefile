@@ -1,6 +1,6 @@
 CC := gcc
-CSTD := gnu99
-CFLAGS := -std=$(CSTD) -Wall -Wextra -g -Iinclude -MMD -MP
+CSTD := gnu17
+CFLAGS := -std=$(CSTD) -Wall -Wextra -Wpedantic -Werror -g -Iinclude -MMD -MP
 
 SRC := $(wildcard src/*.c)
 OBJ := $(patsubst src/%.c,build/%.o,$(SRC))
