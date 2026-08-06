@@ -1,6 +1,6 @@
 #include "packethound_utils.h"
 
-#include<stdbool.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <sys/types.h>
@@ -27,12 +27,12 @@ enum parse_cli_result {
 };
 
 struct stats_block {
-    unsigned int total_packet_count;
-    unsigned int tcp_over_ip_count;
-    unsigned int udp_over_ip_count;
-    unsigned int icmp_count; 
-    unsigned int arp_count;
-    unsigned int not_handled;
+    uint64_t total_packet_count;
+    uint64_t tcp_over_ip_count;
+    uint64_t udp_over_ip_count;
+    uint64_t icmp_count;
+    uint64_t arp_count;
+    uint64_t not_handled;
 };
 
 volatile sig_atomic_t sigint_not_received = 1;
@@ -222,12 +222,12 @@ int main(int argc, char** argv) {
 
     printf("\n================================================\n");
     printf("Session stats :\n"
-           "\tTotal Amount of Packets processed : %u\n"
-           "\tTCP/IP packets : %u\n"
-           "\tUDP/IP packets : %u\n"
-           "\tICMP packets : %u\n"
-           "\tARP packets : %u\n"
-           "\tUnhandled cases : %u\n",
+           "\tTotal Amount of Packets processed : %lu\n"
+           "\tTCP/IP packets : %lu\n"
+           "\tUDP/IP packets : %lu\n"
+           "\tICMP packets : %lu\n"
+           "\tARP packets : %lu\n"
+           "\tUnhandled cases : %lu\n",
            stat_block.total_packet_count,
            stat_block.tcp_over_ip_count,
            stat_block.udp_over_ip_count,
